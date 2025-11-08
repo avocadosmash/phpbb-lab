@@ -359,15 +359,19 @@ main() {
     echo
     
     local issue_num=1
-    while IFS= read -r issue; do
+    
+    # Loop through each issue by index
+    for ((i=0; i<total_issues; i++)); do
+        local issue=$(jq -c ".[$i]" "$JSON_FILE")
+        
         if create_issue "$issue" "$repository" "$issue_num" "$total_issues"; then
-            ((created_count++))
+            created_count=$((created_count + 1))
         else
-            ((failed_count++))
+            failed_count=$((failed_count + 1))
         fi
         
-        ((current_batch++))
-        ((issue_num++))
+        current_batch=$((current_batch + 1))
+        issue_num=$((issue_num + 1))
         
         # Batch processing pause
         if [[ "$current_batch" -eq "$BATCH_SIZE" && "$issue_num" -le "$total_issues" ]]; then
@@ -377,7 +381,8 @@ main() {
             else
                 echo "Completed batch of $BATCH_SIZE issues. Pausing for rate limiting..."
                 echo "Press Enter to continue or Ctrl+C to stop"
-                read -r
+                # Use /dev/tty to read user input separately from the main loop input
+                read -r </dev/tty
             fi
             current_batch=0
             echo
@@ -387,7 +392,7 @@ main() {
         fi
         
         echo
-    done < <(jq -c '.[]' "$JSON_FILE")
+    done
     
     echo "==============================================="
     if [[ "$DRY_RUN" == "true" ]]; then
