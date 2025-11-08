@@ -74,7 +74,7 @@ class UnionTypesCheckSniff implements Sniff
 			return;
 		}
 
-		if (!strpos($type_hint, '|') && $type_hint[0] == '?') // Check nullable shortcut syntax
+		if (strpos($type_hint, '|') === false && $type_hint[0] === '?') // Check nullable shortcut syntax
 		{
 			$type = substr($type_hint, 1);
 			$error = 'Nullable shortcut syntax must not be used. Use union type instead: %1$s|null; found %2$s';
