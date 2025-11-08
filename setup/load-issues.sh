@@ -147,23 +147,63 @@ get_repository() {
         return
     fi
     
-    local owner=$(gh repo view --json owner -q '.owner.login' 2>/dev/null || echo "")
-    local name=$(gh repo view --json name -q '.name' 2>/dev/null || echo "")
+    # First try to get repo info from the current directory or parent directory
+    local repo_info=""
     
-    if [[ -z "$owner" || -z "$name" ]]; then
+    # Check if we're in a git repository (current or parent directory)
+    if [[ -d ".git" ]] || [[ -d "../.git" ]]; then
+        # Try to get remote origin URL and parse it
+        local remote_url=$(git remote get-url origin 2>/dev/null || echo "")
+        if [[ -n "$remote_url" ]]; then
+            # Extract owner/repo from GitHub URL
+            if [[ "$remote_url" =~ github\.com[:/]([^/]+)/([^/]+)(\.git)?$ ]]; then
+                local owner="${BASH_REMATCH[1]}"
+                local name="${BASH_REMATCH[2]}"
+                name="${name%.git}"  # Remove .git suffix if present
+                repo_info="$owner/$name"
+            fi
+        fi
+    fi
+    
+    # If git parsing failed, try gh CLI
+    if [[ -z "$repo_info" ]]; then
+        local owner=$(gh repo view --json owner -q '.owner.login' 2>/dev/null || echo "")
+        local name=$(gh repo view --json name -q '.name' 2>/dev/null || echo "")
+        
+        if [[ -n "$owner" && -n "$name" ]]; then
+            repo_info="$owner/$name"
+        fi
+    fi
+    
+    if [[ -z "$repo_info" ]]; then
         echo "Error: Could not determine repository information."
         echo "Please specify repository with --repo owner/repo or run from within a git repository."
         exit 1
     fi
     
-    echo "$owner/$name"
+    echo "$repo_info"
 }
 
 # Validate JSON file
 validate_json_file() {
+    # If JSON_FILE is relative, check both current directory and setup directory
     if [[ ! -f "$JSON_FILE" ]]; then
-        echo "Error: JSON file '$JSON_FILE' not found."
-        exit 1
+        if [[ -f "setup/$JSON_FILE" ]]; then
+            JSON_FILE="setup/$JSON_FILE"
+        elif [[ -f "../$JSON_FILE" ]] && [[ $(basename "$(pwd)") == "setup" ]]; then
+            JSON_FILE="../$JSON_FILE"
+        elif [[ -f "./$JSON_FILE" ]]; then
+            JSON_FILE="./$JSON_FILE"
+        else
+            echo "Error: JSON file '$JSON_FILE' not found."
+            echo "Searched in:"
+            echo "  - $(pwd)/$JSON_FILE"
+            echo "  - $(pwd)/setup/$JSON_FILE"
+            if [[ $(basename "$(pwd)") == "setup" ]]; then
+                echo "  - $(pwd)/../$JSON_FILE"
+            fi
+            exit 1
+        fi
     fi
     
     if ! jq empty "$JSON_FILE" &> /dev/null; then
@@ -332,9 +372,13 @@ main() {
         # Batch processing pause
         if [[ "$current_batch" -eq "$BATCH_SIZE" && "$issue_num" -le "$total_issues" ]]; then
             echo
-            echo "Completed batch of $BATCH_SIZE issues. Pausing for rate limiting..."
-            echo "Press Enter to continue or Ctrl+C to stop"
-            read -r
+            if [[ "$DRY_RUN" == "true" ]]; then
+                echo "Completed batch of $BATCH_SIZE issues (dry run mode - continuing automatically)..."
+            else
+                echo "Completed batch of $BATCH_SIZE issues. Pausing for rate limiting..."
+                echo "Press Enter to continue or Ctrl+C to stop"
+                read -r
+            fi
             current_batch=0
             echo
         elif [[ "$DRY_RUN" == "false" ]]; then
