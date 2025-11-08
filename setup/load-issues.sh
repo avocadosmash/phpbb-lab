@@ -26,7 +26,7 @@ set -e  # Exit on any error
 
 # Default values
 DRY_RUN=false
-BATCH_SIZE=10
+BATCH_SIZE=100
 DELAY=2
 JSON_FILE="processed_issues.json"
 REPO=""
