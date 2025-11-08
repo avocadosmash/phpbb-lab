@@ -78,7 +78,8 @@ else
     fi
     
     # Run installation
-    php /workspaces/phpbb-lab/phpBB/install/phpbbcli.php install /tmp/phpbb-config.yml
+    cd /workspaces/phpbb-lab/phpBB
+    php install/phpbbcli.php install /tmp/phpbb-config.yml
     
     # Remove install directory
     rm -rf /workspaces/phpbb-lab/phpBB/install
