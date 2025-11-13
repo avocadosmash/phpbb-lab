@@ -1,3 +1,8 @@
+> [!NOTE]  
+> This is an OSS repo for Burn Down Tech Debt demo. It is intented to have legacy code, bugs, and deep history.
+
+---
+
 [<img src="phpBB/styles/all/imgs/svg/phpbb_logo_large_cosmic.svg" alt="phpBB" style="max-width:40%" width="400">](https://www.phpbb.com)
 
 phpBB is a free open-source bulletin board written in PHP.
