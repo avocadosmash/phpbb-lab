@@ -1,5 +1,11 @@
 > [!NOTE]  
-> This is an OSS repo for Burn Down Tech Debt demo. It is intented to have legacy code, bugs, and deep history.
+> This is an OSS repo for Burn Down Tech Debt demo with Copilot agents. It is intented to have legacy code, bugs, and deep history.
+>
+> To get started,
+> 1. Create a repo from this template, or clone this repo
+> 2. Open in Codespaces
+> 3. Run in terminal `./setup/start-lab.sh` - to build and start the app
+> 4. Run in terminal `./setup/load-issues.sh` - to load bug issues
 
 ---
 
