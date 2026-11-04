@@ -328,6 +328,8 @@ class phpbb_functional_extension_acp_test extends phpbb_functional_test_case
 			$this->fail('Failed acquiring install links for test extensions');
 		}
 
+		$this->assertStringContainsString('hash=', $viglink_install_link->getUri());
+
 		// Attempt to install phpbb/viglink extension
 		$crawler = self::$client->click($viglink_install_link);
 		$this->assertContainsLang('EXTENSIONS_INSTALLED', $crawler->filter('.successbox > p')->text());
