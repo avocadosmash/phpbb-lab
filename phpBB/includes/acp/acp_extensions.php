@@ -487,9 +487,14 @@ class acp_extensions
 
 				$extension = $this->request->variable('extension', '');
 
-				if (empty($extension))
+				$available_extensions = $composer_manager->get_available_packages();
+				$available_extension_names = array_column($available_extensions, 'composer_name');
+
+				if (empty($extension)
+					|| !in_array($extension, $available_extension_names, true)
+					|| !check_link_hash($this->request->variable('hash', ''), 'install.' . $extension))
 				{
-					redirect($this->u_action);
+					trigger_error($language->lang('FORM_INVALID') . adm_back_link($this->u_action), E_USER_WARNING);
 				}
 
 				$formatter = new \phpbb\composer\io\html_output_formatter([
@@ -705,6 +710,11 @@ class acp_extensions
 				$managed_packages = $manager->get_managed_packages();
 
 				$extensions = array_slice($available_extensions, $start, 20);
+				foreach ($extensions as &$extension)
+				{
+					$extension['install_hash'] = generate_link_hash('install.' . $extension['composer_name']);
+				}
+				unset($extension);
 
 				$pagination->generate_template_pagination($base_url, 'pagination', 'start', count($available_extensions), 20, $start);
 

@@ -112,7 +112,7 @@
 				<span style="color: #BC2A4D;">{{ lang('INSTALLED_MANUALLY') }}</span>
 				(<a href="{{ U_ACTION }}&amp;action=manage&amp;extension={{ extension.composer_name|url_encode }}">{{ lang('MANAGE') }}</a>)
 			{% elseif not enabled -%}
-				<a href="{{ U_ACTION }}&amp;action=install&amp;extension={{ extension.composer_name|url_encode }}">{{ lang('INSTALL') }}</a>
+				<a href="{{ U_ACTION }}&amp;action=install&amp;extension={{ extension.composer_name|url_encode }}&amp;hash={{ extension.install_hash }}">{{ lang('INSTALL') }}</a>
 			{%- endif -%}
 		</td>
 	</tr>
